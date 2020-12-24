@@ -10,7 +10,7 @@ from num2words import num2words
 import os
 import numpy as np
 contents = []
-path_to_json = '/Users/shanmukavarma/Downloads/test_file/'
+path_to_json = '/Users/shanmukavarma/Downloads/anonymized/'
 json_files = [pos_json for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
 bigram = []
 def convert_lower_case(data):
@@ -102,6 +102,8 @@ def preprocess(data):
     data = remove_symbols(data)  # needed again as num2word is giving few hypens and commas fourty-one
     data = remove_stop_words(data)  # needed again as num2word is giving stop words 101 - one hundred and one
     data = lemmatize(data)
+    data = remove_numbers(data)
+    data = remove_two_letter_words(data)
     tokens = bigram_token(data)
     bigram.append(tokens)
     return data
@@ -109,7 +111,6 @@ def preprocess(data):
 for file_name in enumerate(json_files):
     total_file=path_to_json+file_name[1]
     f= open(total_file,)
-    print(f)
     data = json.load(f)
     json_content = []
     if ((data is not None) and (data.has_key('EmployerOrg'))):
@@ -144,11 +145,12 @@ def computeTF(wordDict, bow):
     return tfDict
 for k in contents:
     wordDict = dict.fromkeys(wordSet, 0)
-    for word in k:
-        wordDict[word] += 1
-    tfRow=computeTF(wordDict,k)
-    tfData.append(tfRow)
-    wordDectList.append(wordDict)
+    if(len(k) > 0):
+        for word in k:
+            wordDict[word] += 1
+        tfRow=computeTF(wordDict,k)
+        tfData.append(tfRow)
+        wordDectList.append(wordDict)
 print('completed TF')
 contents = []
 def computeIDF(docList):
