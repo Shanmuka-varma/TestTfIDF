@@ -1,4 +1,7 @@
 import json
+import re
+
+import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
@@ -7,10 +10,9 @@ from num2words import num2words
 import os
 import numpy as np
 contents = []
-path_to_json = '/Users/shanmukavarma/Downloads/anonymized/'
+path_to_json = '/Users/shanmukavarma/Downloads/test_file/'
 json_files = [pos_json for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
-
-
+bigram = []
 def convert_lower_case(data):
     return np.char.lower(data)
 
@@ -26,7 +28,7 @@ def remove_stop_words(data):
 
 
 def remove_symbols(data):
-    symbols = "!\"#$%&()*+-./:;<=>?@[\]^_`{|}~\n\r\t"
+    symbols = "!\"#$%&()*+-./:;<=>?@[\]^_`{|}~\n\r"
     for i in range(len(symbols)):
         data = np.char.replace(data, symbols[i], ' ')
         data = np.char.replace(data, "  ", " ")
@@ -37,6 +39,10 @@ def remove_symbols(data):
 
 def remove_apostrophe(data):
     return np.char.replace(data, "'", "")
+
+
+def remove_numbers(data):
+    return re.sub(r'\w*\d\w*', '', data).strip()
 
 
 def stemming(data):
@@ -56,6 +62,14 @@ def lemmatize(data):
         new_text = new_text + " " +lemmatizer.lemmatize(w)
     return new_text
 
+def remove_two_letter_words(data):
+    tokens = word_tokenize(str(data))
+    new_text = ""
+    for w in tokens:
+        if len(w) > 2:
+            new_text = new_text + " " + w
+    return new_text
+
 
 def convert_numbers(data):
     tokens = word_tokenize(str(data))
@@ -68,6 +82,11 @@ def convert_numbers(data):
         new_text = new_text + " " + w
     new_text = np.char.replace(new_text, "-", " ")
     return new_text
+
+def bigram_token(data):
+    tokens = word_tokenize(str(data))
+    bigrams_trigrams = list(map(' '.join, nltk.bigrams(tokens)))
+    return bigrams_trigrams;
 
 
 def preprocess(data):
@@ -83,11 +102,14 @@ def preprocess(data):
     data = remove_symbols(data)  # needed again as num2word is giving few hypens and commas fourty-one
     data = remove_stop_words(data)  # needed again as num2word is giving stop words 101 - one hundred and one
     data = lemmatize(data)
+    tokens = bigram_token(data)
+    bigram.append(tokens)
     return data
 
 for file_name in enumerate(json_files):
     total_file=path_to_json+file_name[1]
     f= open(total_file,)
+    print(f)
     data = json.load(f)
     json_content = []
     if ((data is not None) and (data.has_key('EmployerOrg'))):
@@ -105,12 +127,15 @@ for i in contents:
     wordSet = wordSet.union(set(i))
 tfData = []
 wordDectList = []
-Stringlist = list(wordSet)
-f=open('/Users/shanmukavarma/Downloads/f1.txt','w')
-for ele in Stringlist:
+bigramset = set()
+for m in bigram:
+    bigramset = bigramset.union(set(m))
+bigramlist = list(bigramset)
+f=open('/Users/shanmukavarma/Downloads/bigramskills.txt','w')
+for ele in bigramlist:
     f.write(ele+'\n')
 f.close()
-print('completed writing text for wordset')
+print('completed bigram')
 def computeTF(wordDict, bow):
     tfDict = {}
     bowCount = len(bow)
@@ -155,4 +180,20 @@ for i in tfData:
 print('completed TFIDF')
 import pandas as pd
 df=pd.DataFrame(tfidfList)
-df.to_csv('/Users/shanmukavarma/Downloads/test_file/result.csv')
+cols = df.columns
+bt = df.apply(lambda x: x > 0)
+df_boolean = df>0
+df_boolean['result'] = bt.apply(lambda x: list(cols[x.values]), axis=1)
+df_result =  df_boolean[df_boolean['result'] != '']['result']
+lst_result = df_result.values[:,np.newaxis]
+skillsset = set()
+for i in lst_result:
+    for z in i:
+        skillsset = skillsset.union(set(z))
+skilllist = list(skillsset)
+f=open('/Users/shanmukavarma/Downloads/skills.txt','w')
+for ele in skilllist:
+    f.write(ele+'\n')
+f.close()
+print('completed writing text for wordset')
+#df.to_csv('/Users/shanmukavarma/Downloads/test_file/result.csv')

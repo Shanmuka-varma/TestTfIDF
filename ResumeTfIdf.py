@@ -1,4 +1,7 @@
 import json
+import re
+
+import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
@@ -7,10 +10,9 @@ from num2words import num2words
 import os
 import numpy as np
 contents = []
-path_to_json = '/Users/shanmukavarma/Downloads/anonymized/'
+path_to_json = '/Users/shanmukavarma/Downloads/test_file/'
 json_files = [pos_json for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
-
-
+bigram = []
 def convert_lower_case(data):
     return np.char.lower(data)
 
@@ -39,6 +41,10 @@ def remove_apostrophe(data):
     return np.char.replace(data, "'", "")
 
 
+def remove_numbers(data):
+    return re.sub(r'\w*\d\w*', '', data).strip()
+
+
 def stemming(data):
     stemmer = PorterStemmer()
     tokens = word_tokenize(str(data))
@@ -56,6 +62,14 @@ def lemmatize(data):
         new_text = new_text + " " +lemmatizer.lemmatize(w)
     return new_text
 
+def remove_two_letter_words(data):
+    tokens = word_tokenize(str(data))
+    new_text = ""
+    for w in tokens:
+        if len(w) > 2:
+            new_text = new_text + " " + w
+    return new_text
+
 
 def convert_numbers(data):
     tokens = word_tokenize(str(data))
@@ -68,6 +82,11 @@ def convert_numbers(data):
         new_text = new_text + " " + w
     new_text = np.char.replace(new_text, "-", " ")
     return new_text
+
+def bigram_token(data):
+    tokens = word_tokenize(str(data))
+    bigrams_trigrams = list(map(' '.join, nltk.bigrams(tokens)))
+    return bigrams_trigrams;
 
 
 def preprocess(data):
@@ -83,6 +102,8 @@ def preprocess(data):
     data = remove_symbols(data)  # needed again as num2word is giving few hypens and commas fourty-one
     data = remove_stop_words(data)  # needed again as num2word is giving stop words 101 - one hundred and one
     data = lemmatize(data)
+    tokens = bigram_token(data)
+    bigram.append(tokens)
     return data
 
 for file_name in enumerate(json_files):
@@ -105,8 +126,15 @@ for i in contents:
     wordSet = wordSet.union(set(i))
 tfData = []
 wordDectList = []
-
-
+bigramset = set()
+for m in bigram:
+    bigramset = bigramset.union(set(m))
+bigramlist = list(bigramset)
+f=open('/Users/shanmukavarma/Downloads/bigramskills.txt','w')
+for ele in bigramlist:
+    f.write(ele+'\n')
+f.close()
+print('completed bigram')
 def computeTF(wordDict, bow):
     tfDict = {}
     bowCount = len(bow)
