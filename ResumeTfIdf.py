@@ -1,3 +1,4 @@
+import datetime
 import json
 import re
 
@@ -17,7 +18,7 @@ import numpy as np
 
 contents = []
 # path_to_json = '../target/anonymized/'
-path_to_json = '/Users/shanmukavarma/Downloads/anonymized/'
+path_to_json = '/Users/shanmukavarma/Downloads/test_file/'
 json_files = [pos_json for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
 bigram = []
 
@@ -139,7 +140,7 @@ for file_name in enumerate(json_files):
     f.close();
     if (len(json_content) > 0):
         contents.append(word_tokenize(str(preprocess(json_content))))
-print('completed loadng files and pre-processing')
+print('completed loadng files and pre-processing '+str(datetime.datetime.now()))
 wordSet = set()
 for i in contents:
     wordSet = wordSet.union(set(i))
@@ -153,7 +154,7 @@ f = open('/Users/shanmukavarma/Downloads/bigramskills.txt', 'w')
 for ele in bigramlist:
     f.write(ele + '\n')
 f.close()
-print('completed bigram')
+print('completed bigram '+str(datetime.datetime.now()))
 
 
 def computeTF(wordDict, bow):
@@ -172,7 +173,7 @@ for k in contents:
         tfRow = computeTF(wordDict, k)
         tfData.append(tfRow)
         wordDectList.append(wordDict)
-print('completed TF')
+print('completed TF '+str(datetime.datetime.now()))
 contents = []
 
 
@@ -194,7 +195,7 @@ def computeIDF(docList):
 
 
 idfs = computeIDF(wordDectList)
-print('completed IDF')
+print('completed IDF '+str(datetime.datetime.now()))
 
 
 def computeTFIDF(tfBow, idfs):
@@ -208,7 +209,7 @@ tfidfList = []
 for i in tfData:
     settfidf = computeTFIDF(i, idfs)
     tfidfList.append(settfidf)
-print('completed TFIDF')
+print('completed TFIDF '+str(datetime.datetime.now()))
 import pandas as pd
 
 df = pd.DataFrame(tfidfList)
@@ -228,6 +229,7 @@ f=open('/Users/shanmukavarma/Downloads/skills.txt','w')
 for ele in skilllist:
     f.write(ele + '\n')
 f.close()
-print('completed writing text for wordset')
+print('completed writing text for wordset '+str(datetime.datetime.now()))
 # df.to_csv('../target/tf-idf-result.csv')
 df.to_csv('/Users/shanmukavarma/Downloads/test_file/result.csv')
+print('completed csv creation '+str(datetime.datetime.now()))

@@ -1,3 +1,4 @@
+import datetime
 import json
 import re
 
@@ -17,7 +18,7 @@ import numpy as np
 
 contents = []
 # path_to_json = '../target/anonymized/'
-path_to_json = '/Users/shanmukavarma/Downloads/test_file/'
+path_to_json = '/Users/shanmukavarma/Downloads/anonymized3/'
 json_files = [pos_json for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
 bigram = []
 
@@ -139,12 +140,13 @@ for file_name in enumerate(json_files):
     f.close();
     if (len(json_content) > 0):
         contents.append(str(preprocess(json_content)))
+print('loading and pre-processing completed '+str(datetime.datetime.now()))
 from sklearn.feature_extraction.text import TfidfVectorizer
 vectorizer = TfidfVectorizer(max_df=.65, min_df=1, stop_words=None, use_idf=True, norm=None)
 transformed_documents = vectorizer.fit_transform(contents)
-print('vector')
+print('vector transformation completed '+str(datetime.datetime.now()))
 transformed_documents_as_array = transformed_documents.toarray()
-print(len(transformed_documents_as_array))
+print(len(transformed_documents_as_array)+' '+str(datetime.datetime.now()))
 import pandas as pd
 for counter, doc in enumerate(transformed_documents_as_array):
     # construct a dataframe
@@ -152,4 +154,4 @@ for counter, doc in enumerate(transformed_documents_as_array):
     one_doc_as_df = pd.DataFrame.from_records(tf_idf_tuples, columns=['term', 'score']).sort_values(by='score', ascending=False).reset_index(drop=True)
 
     # output to a csv using the enumerated value for the filename
-    one_doc_as_df.to_csv('/Users/shanmukavarma/Downloads/'+str(counter)+'.csv')
+    one_doc_as_df.to_csv('/Users/shanmukavarma/Downloads/a3_result/'+str(counter)+'.csv')
