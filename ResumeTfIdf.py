@@ -15,9 +15,11 @@ from num2words import num2words
 import os
 import numpy as np
 
+working_dir = '../target'
+# working_dir = '/Users/shanmukavarma/Downloads'
+
 contents = []
-# path_to_json = '../target/anonymized/'
-path_to_json = '/Users/shanmukavarma/Downloads/anonymized/'
+path_to_json = working_dir + '/anonymized/'
 json_files = [pos_json for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
 bigram = []
 
@@ -149,7 +151,7 @@ bigramset = set()
 for m in bigram:
     bigramset = bigramset.union(set(m))
 bigramlist = list(bigramset)
-f = open('/Users/shanmukavarma/Downloads/bigramskills.txt', 'w')
+f = open(working_dir + '/bigramskills.txt', 'w')
 for ele in bigramlist:
     f.write(ele + '\n')
 f.close()
@@ -223,11 +225,9 @@ for i in lst_result:
     for z in i:
         skillsset = skillsset.union(set(z))
 skilllist = list(skillsset)
-# f = open('../target/skills.txt', 'w')
-f=open('/Users/shanmukavarma/Downloads/skills.txt','w')
+f = open(working_dir + '/skills.txt', 'w')
 for ele in skilllist:
     f.write(ele + '\n')
 f.close()
 print('completed writing text for wordset')
-# df.to_csv('../target/tf-idf-result.csv')
-df.to_csv('/Users/shanmukavarma/Downloads/test_file/result.csv')
+df.to_csv(working_dir + '/tf-idf-result.csv')
