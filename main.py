@@ -149,9 +149,6 @@ transformed_documents_as_array = transformed_documents.toarray()
 print(str(len(transformed_documents_as_array))+' '+str(datetime.datetime.now()))
 import pandas as pd
 for counter, doc in enumerate(transformed_documents_as_array):
-    # construct a dataframe
     tf_idf_tuples = list(zip(vectorizer.get_feature_names(), doc))
     one_doc_as_df = pd.DataFrame.from_records(tf_idf_tuples, columns=['term', 'score']).sort_values(by='score', ascending=False).reset_index(drop=True)
-
-    # output to a csv using the enumerated value for the filename
     one_doc_as_df.to_csv('/Users/shanmukavarma/Downloads/a3_result/'+str(counter)+'.csv')
