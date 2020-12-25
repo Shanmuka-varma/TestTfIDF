@@ -164,8 +164,8 @@ for file_name in enumerate(json_files):
         contents.append(str(preprocess(json_content)))
         filenames.append(str(file_name[1]))
 print('loading and pre-processing completed '+str(datetime.datetime.now()))
-reg_document_text = 'Responsible for execution of various corporate finance deals and projects especially in merger & acquisitions area to ensure clients requests and regulatory requirements are met Assist in developing corporate finance business strategy in accordance with overall company strategy and contribute to the implementation of such business plans Maintaining good working relationship with clients and professional parties to ensure smooth execution of business projects Prepare marketing and presentation materials Frequent travel is required At least 5 years relevant experience in investment banks Strong command of spoken and written English and Chinese including both Cantonese & Mandarin is essential'
-jd_data= preprocess(reg_document_text)
+jd_document_text = 'Responsible for execution of various corporate finance deals and projects especially in merger & acquisitions area to ensure clients requests and regulatory requirements are met Assist in developing corporate finance business strategy in accordance with overall company strategy and contribute to the implementation of such business plans Maintaining good working relationship with clients and professional parties to ensure smooth execution of business projects Prepare marketing and presentation materials Frequent travel is required At least 5 years relevant experience in investment banks Strong command of spoken and written English and Chinese including both Cantonese & Mandarin is essential'
+jd_data= preprocess(jd_document_text)
 resultData = process_files(jd_data,contents,filenames)
 print('JD Score completed '+str(datetime.datetime.now()))
 with open('/Users/shanmukavarma/Downloads/jd-score.csv','wb') as out:
