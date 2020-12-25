@@ -2,6 +2,11 @@ import json
 import re
 
 import nltk
+
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
@@ -9,10 +14,14 @@ from nltk.stem import WordNetLemmatizer
 from num2words import num2words
 import os
 import numpy as np
+
 contents = []
+# path_to_json = '../target/anonymized/'
 path_to_json = '/Users/shanmukavarma/Downloads/anonymized/'
 json_files = [pos_json for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
 bigram = []
+
+
 def convert_lower_case(data):
     return np.char.lower(data)
 
@@ -59,8 +68,9 @@ def lemmatize(data):
     tokens = word_tokenize(str(data))
     new_text = ""
     for w in tokens:
-        new_text = new_text + " " +lemmatizer.lemmatize(w)
+        new_text = new_text + " " + lemmatizer.lemmatize(w)
     return new_text
+
 
 def remove_two_letter_words(data):
     tokens = word_tokenize(str(data))
@@ -82,6 +92,7 @@ def convert_numbers(data):
         new_text = new_text + " " + w
     new_text = np.char.replace(new_text, "-", " ")
     return new_text
+
 
 def bigram_token(data):
     tokens = word_tokenize(str(data))
@@ -108,19 +119,25 @@ def preprocess(data):
     bigram.append(tokens)
     return data
 
+
 for file_name in enumerate(json_files):
-    total_file=path_to_json+file_name[1]
-    f= open(total_file,)
-    data = json.load(f)
+    total_file = path_to_json + file_name[1]
+    f = open(total_file, )
+
+    try:
+        data = json.load(f)
+    except Exception:
+        pass
+
     json_content = []
-    if ((data is not None) and (data.has_key('EmployerOrg'))):
+    if ((data is not None) and ('EmployerOrg' in data)):
         for i in data['EmployerOrg']:
-            if i.has_key('PositionHistory'):
+            if 'PositionHistory' in i:
                 for z in i['PositionHistory']:
-                    if z.has_key('Description'):
+                    if 'Description' in z:
                         json_content.append(z['Description'])
     f.close();
-    if(len(json_content) > 0) :
+    if (len(json_content) > 0):
         contents.append(word_tokenize(str(preprocess(json_content))))
 print('completed loadng files and pre-processing')
 wordSet = set()
@@ -132,27 +149,33 @@ bigramset = set()
 for m in bigram:
     bigramset = bigramset.union(set(m))
 bigramlist = list(bigramset)
-f=open('/Users/shanmukavarma/Downloads/bigramskills.txt','w')
+f = open('/Users/shanmukavarma/Downloads/bigramskills.txt', 'w')
 for ele in bigramlist:
-    f.write(ele+'\n')
+    f.write(ele + '\n')
 f.close()
 print('completed bigram')
+
+
 def computeTF(wordDict, bow):
     tfDict = {}
     bowCount = len(bow)
     for word, count in wordDict.items():
-        tfDict[word] = count/float(bowCount)
+        tfDict[word] = count / float(bowCount)
     return tfDict
+
+
 for k in contents:
     wordDict = dict.fromkeys(wordSet, 0)
-    if(len(k) > 0):
+    if (len(k) > 0):
         for word in k:
             wordDict[word] += 1
-        tfRow=computeTF(wordDict,k)
+        tfRow = computeTF(wordDict, k)
         tfData.append(tfRow)
         wordDectList.append(wordDict)
 print('completed TF')
 contents = []
+
+
 def computeIDF(docList):
     import math
     idfDict = {}
@@ -168,34 +191,43 @@ def computeIDF(docList):
         idfDict[word] = math.log10(N / float(val))
 
     return idfDict
+
+
 idfs = computeIDF(wordDectList)
 print('completed IDF')
+
+
 def computeTFIDF(tfBow, idfs):
     tfidf = {}
     for word, val in tfBow.items():
-        tfidf[word] = val*idfs[word]
+        tfidf[word] = val * idfs[word]
     return tfidf
+
+
 tfidfList = []
 for i in tfData:
-    settfidf = computeTFIDF(i,idfs)
+    settfidf = computeTFIDF(i, idfs)
     tfidfList.append(settfidf)
 print('completed TFIDF')
 import pandas as pd
-df=pd.DataFrame(tfidfList)
+
+df = pd.DataFrame(tfidfList)
 cols = df.columns
 bt = df.apply(lambda x: x > 0)
-df_boolean = df>0
+df_boolean = df > 0
 df_boolean['result'] = bt.apply(lambda x: list(cols[x.values]), axis=1)
-df_result =  df_boolean[df_boolean['result'] != '']['result']
-lst_result = df_result.values[:,np.newaxis]
+df_result = df_boolean[df_boolean['result'] != '']['result']
+lst_result = df_result.values[:, np.newaxis]
 skillsset = set()
 for i in lst_result:
     for z in i:
         skillsset = skillsset.union(set(z))
 skilllist = list(skillsset)
+# f = open('../target/skills.txt', 'w')
 f=open('/Users/shanmukavarma/Downloads/skills.txt','w')
 for ele in skilllist:
-    f.write(ele+'\n')
+    f.write(ele + '\n')
 f.close()
 print('completed writing text for wordset')
+# df.to_csv('../target/tf-idf-result.csv')
 df.to_csv('/Users/shanmukavarma/Downloads/test_file/result.csv')
