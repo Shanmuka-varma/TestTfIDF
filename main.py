@@ -18,7 +18,7 @@ import numpy as np
 
 contents = []
 # path_to_json = '../target/anonymized/'
-path_to_json = '/Users/shanmukavarma/Downloads/anonymized3/'
+path_to_json = '/Users/shanmukavarma/Downloads/anonymized/'
 json_files = [pos_json for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
 bigram = []
 
@@ -146,7 +146,7 @@ vectorizer = TfidfVectorizer(max_df=.65, min_df=1, stop_words=None, use_idf=True
 transformed_documents = vectorizer.fit_transform(contents)
 print('vector transformation completed '+str(datetime.datetime.now()))
 transformed_documents_as_array = transformed_documents.toarray()
-print(len(transformed_documents_as_array)+' '+str(datetime.datetime.now()))
+print(str(len(transformed_documents_as_array))+' '+str(datetime.datetime.now()))
 import pandas as pd
 for counter, doc in enumerate(transformed_documents_as_array):
     # construct a dataframe
