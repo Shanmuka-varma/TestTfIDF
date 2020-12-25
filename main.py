@@ -1,8 +1,11 @@
+import csv
 import datetime
 import json
 import re
 
 import nltk
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -21,6 +24,7 @@ contents = []
 path_to_json = '/Users/shanmukavarma/Downloads/anonymized/'
 json_files = [pos_json for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
 bigram = []
+filenames = []
 
 
 def convert_lower_case(data):
@@ -121,6 +125,24 @@ def preprocess(data):
     return data
 
 
+def get_tf_idf_cosine_similarity(compare_doc,doc_corpus):
+    tf_idf_vect = TfidfVectorizer(stop_words=None, use_idf=True, norm=None)
+    tf_idf_req_vector = tf_idf_vect.fit_transform([compare_doc]).todense()
+    tf_idf_resume_vector = tf_idf_vect.transform(doc_corpus).todense()
+    cosine_similarity_list = []
+    for i in range(len(tf_idf_resume_vector)):
+        cosine_similarity_list.append(cosine_similarity(tf_idf_req_vector,tf_idf_resume_vector[i])[0][0])
+    return cosine_similarity_list
+
+
+def process_files(req_document,resume_docs,filenames):
+    # TF-IDF - cosine similarity
+    cos_sim_list = get_tf_idf_cosine_similarity(req_document,resume_docs)
+    zipped_docs = zip(cos_sim_list,filenames)
+    sorted_doc_list = sorted(zipped_docs, key = lambda x: x[0], reverse=True)
+    return sorted_doc_list
+
+
 for file_name in enumerate(json_files):
     total_file = path_to_json + file_name[1]
     f = open(total_file, )
@@ -137,18 +159,17 @@ for file_name in enumerate(json_files):
                 for z in i['PositionHistory']:
                     if 'Description' in z:
                         json_content.append(z['Description'])
-    f.close();
+    f.close()
     if (len(json_content) > 0):
         contents.append(str(preprocess(json_content)))
+        filenames.append(str(file_name[1]))
 print('loading and pre-processing completed '+str(datetime.datetime.now()))
-from sklearn.feature_extraction.text import TfidfVectorizer
-vectorizer = TfidfVectorizer(max_df=.65, min_df=1, stop_words=None, use_idf=True, norm=None)
-transformed_documents = vectorizer.fit_transform(contents)
-print('vector transformation completed '+str(datetime.datetime.now()))
-transformed_documents_as_array = transformed_documents.toarray()
-print(str(len(transformed_documents_as_array))+' '+str(datetime.datetime.now()))
-import pandas as pd
-for counter, doc in enumerate(transformed_documents_as_array):
-    tf_idf_tuples = list(zip(vectorizer.get_feature_names(), doc))
-    one_doc_as_df = pd.DataFrame.from_records(tf_idf_tuples, columns=['term', 'score']).sort_values(by='score', ascending=False).reset_index(drop=True)
-    one_doc_as_df.to_csv('/Users/shanmukavarma/Downloads/a3_result/'+str(counter)+'.csv')
+reg_document_text = 'Responsible for execution of various corporate finance deals and projects especially in merger & acquisitions area to ensure clients requests and regulatory requirements are met Assist in developing corporate finance business strategy in accordance with overall company strategy and contribute to the implementation of such business plans Maintaining good working relationship with clients and professional parties to ensure smooth execution of business projects Prepare marketing and presentation materials Frequent travel is required At least 5 years relevant experience in investment banks Strong command of spoken and written English and Chinese including both Cantonese & Mandarin is essential'
+jd_data= preprocess(reg_document_text)
+resultData = process_files(jd_data,contents,filenames)
+print('JD Score completed '+str(datetime.datetime.now()))
+with open('/Users/shanmukavarma/Downloads/jd-score.csv','wb') as out:
+    csv_out=csv.writer(out)
+    csv_out.writerow(['score','file_name'])
+    for row in resultData:
+        csv_out.writerow(row)
