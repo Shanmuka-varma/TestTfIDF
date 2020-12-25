@@ -1,3 +1,4 @@
+import datetime
 import json
 import re
 
@@ -15,8 +16,8 @@ from num2words import num2words
 import os
 import numpy as np
 
-working_dir = '../target'
-# working_dir = '/Users/shanmukavarma/Downloads'
+# working_dir = '../target'
+working_dir = '/Users/shanmukavarma/Downloads'
 
 contents = []
 path_to_json = working_dir + '/anonymized/'
@@ -141,7 +142,7 @@ for file_name in enumerate(json_files):
     f.close();
     if (len(json_content) > 0):
         contents.append(word_tokenize(str(preprocess(json_content))))
-print('completed loadng files and pre-processing')
+print('completed loadng files and pre-processing '+str(datetime.datetime.now()))
 wordSet = set()
 for i in contents:
     wordSet = wordSet.union(set(i))
@@ -155,7 +156,7 @@ f = open(working_dir + '/bigramskills.txt', 'w')
 for ele in bigramlist:
     f.write(ele + '\n')
 f.close()
-print('completed bigram')
+print('completed bigram '+str(datetime.datetime.now()))
 
 
 def computeTF(wordDict, bow):
@@ -174,7 +175,7 @@ for k in contents:
         tfRow = computeTF(wordDict, k)
         tfData.append(tfRow)
         wordDectList.append(wordDict)
-print('completed TF')
+print('completed TF '+str(datetime.datetime.now()))
 contents = []
 
 
@@ -196,7 +197,7 @@ def computeIDF(docList):
 
 
 idfs = computeIDF(wordDectList)
-print('completed IDF')
+print('completed IDF '+str(datetime.datetime.now()))
 
 
 def computeTFIDF(tfBow, idfs):
@@ -210,7 +211,7 @@ tfidfList = []
 for i in tfData:
     settfidf = computeTFIDF(i, idfs)
     tfidfList.append(settfidf)
-print('completed TFIDF')
+print('completed TFIDF '+str(datetime.datetime.now()))
 import pandas as pd
 
 df = pd.DataFrame(tfidfList)
@@ -229,5 +230,7 @@ f = open(working_dir + '/skills.txt', 'w')
 for ele in skilllist:
     f.write(ele + '\n')
 f.close()
-print('completed writing text for wordset')
+
+print('completed writing text for wordset '+str(datetime.datetime.now()))
 df.to_csv(working_dir + '/tf-idf-result.csv')
+print('completed csv creation '+str(datetime.datetime.now()))
